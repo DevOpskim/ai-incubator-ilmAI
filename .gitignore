@@ -1,0 +1,30 @@
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+.venv/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+dist/
+build/
+.cache/
+.next/
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Misc
+.DS_Store
+*.log
+docker-compose.override.yml
