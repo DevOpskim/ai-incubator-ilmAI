@@ -28,6 +28,9 @@ jobs:
           poetry install --no-interaction
 
       - name: Run backend tests
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+          JWT_SECRET: test-secret
         run: |
           cd backend
           poetry run pytest -q
