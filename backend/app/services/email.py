@@ -1,9 +1,8 @@
 import random
-import smtplib
 from datetime import datetime, timedelta, timezone
-from email.mime.text import MIMEText
 from uuid import uuid4
 
+import httpx
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
@@ -17,19 +16,27 @@ def generate_otp() -> str:
 
 
 def send_otp_email(to_email: str, otp: str) -> None:
-    if not settings.smtp_host:
-        print(f"[email] SMTP not configured. OTP for {to_email}: {otp}")
+    if not settings.resend_api_key:
+        print(f"[email] Resend not configured. OTP for {to_email}: {otp}")
         return
 
-    msg = MIMEText(f"Your Ilm Agent verification code is: {otp}\n\nThis code expires in 10 minutes.")
-    msg["Subject"] = "Your Ilm Agent Verification Code"
-    msg["From"] = settings.smtp_from_email
-    msg["To"] = to_email
-
-    with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
-        server.starttls()
-        server.login(settings.smtp_user, settings.smtp_password)
-        server.sendmail(settings.smtp_from_email, [to_email], msg.as_string())
+    resp = httpx.post(
+        "https://api.resend.com/emails",
+        headers={
+            "Authorization": f"Bearer {settings.resend_api_key}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "from": settings.smtp_from_email or "onboarding@resend.dev",
+            "to": [to_email],
+            "subject": "Your Ilm Agent Verification Code",
+            "html": f"<p>Your Ilm Agent verification code is: <strong>{otp}</strong></p><p>This code expires in 10 minutes.</p>",
+        },
+        timeout=15,
+    )
+    if resp.is_error:
+        print(f"[email] Failed to send OTP to {to_email}: {resp.text}")
+        raise RuntimeError(f"Resend API error: {resp.text}")
 
 
 def create_and_send_otp(email: str, db: Session) -> None:
