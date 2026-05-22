@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/app/hooks/useSession";
-import styles from "../styles/upload.module.css";
-
-export const getServerSideProps = () => ({ props: {} });
-
 export default function UploadPage() {
   const router = useRouter();
   const { user, loading: sessionLoading } = useSession();

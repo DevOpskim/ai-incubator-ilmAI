@@ -22,6 +22,17 @@ export default function Home() {
     { label: "Knowledge Gaps", href: "/gaps", desc: "See what to focus on" },
   ];
 
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Header />
