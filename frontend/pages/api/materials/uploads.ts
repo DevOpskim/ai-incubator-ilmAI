@@ -1,24 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextApiRequest, NextApiResponse } from "next";
+import { proxy } from "@/lib/api-proxy";
 
-const BACKEND_URL = process.env.BACKEND_INTERNAL_URL || "http://backend:8000";
-
-export async function GET(request: NextRequest) {
-  try {
-    const headers: Record<string, string> = {};
-    const cookie = request.headers.get("cookie");
-    if (cookie) headers["Cookie"] = cookie;
-
-    const response = await fetch(`${BACKEND_URL}/materials/uploads`, {
-      headers,
-    });
-
-    const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error("Uploads proxy error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch uploads" },
-      { status: 500 }
-    );
-  }
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  return proxy(req, res, "/materials/uploads");
 }
