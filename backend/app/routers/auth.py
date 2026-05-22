@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -11,6 +11,17 @@ from app.schemas.auth import GoogleAuth, Token, UserCreate, UserLogin
 from app.services.email import create_and_send_otp, verify_otp
 
 settings = get_settings()
+
+
+def _set_token_cookie(response: JSONResponse, access_token: str, secure: bool) -> None:
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=secure,
+        samesite="lax",
+        max_age=60 * 60 * 24,
+    )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -79,17 +90,10 @@ async def verify_registration(
         data={"sub": str(new_user.id), "email": new_user.email}
     )
 
-    response = Response()
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        secure=request.url.scheme == "https",
-        samesite="lax",
-        max_age=60 * 60 * 24,
-    )
-
-    return Token(access_token=access_token)
+    content = Token(access_token=access_token).model_dump()
+    response = JSONResponse(content=content, status_code=201)
+    _set_token_cookie(response, access_token, request.url.scheme == "https")
+    return response
 
 
 @router.post("/login")
@@ -97,7 +101,7 @@ async def login(
     request: Request,
     user_data: UserLogin,
     db: Session = Depends(get_db),
-) -> Token:
+) -> JSONResponse:
     """Log in an existing user."""
     user = db.query(User).filter(User.email == user_data.email).first()
 
@@ -112,18 +116,10 @@ async def login(
         data={"sub": str(user.id), "email": user.email}
     )
 
-    # Set token in cookie for browser clients
-    response = Response()
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        secure=request.url.scheme == "https",
-        samesite="lax",
-        max_age=60 * 60 * 24,  # 24 hours
-    )
-
-    return Token(access_token=access_token)
+    content = Token(access_token=access_token).model_dump()
+    response = JSONResponse(content=content)
+    _set_token_cookie(response, access_token, request.url.scheme == "https")
+    return response
 
 
 @router.post("/google")
@@ -131,7 +127,7 @@ async def google_login(
     request: Request,
     google_data: GoogleAuth,
     db: Session = Depends(get_db),
-) -> Token:
+) -> JSONResponse:
     """Log in with Google OAuth."""
     # In production, verify the Google ID token with Google's API
     # For MVP, we'll use a placeholder verification
@@ -162,23 +158,15 @@ async def google_login(
         data={"sub": str(user.id), "email": user.email}
     )
 
-    # Set token in cookie for browser clients
-    response = Response()
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        secure=request.url.scheme == "https",
-        samesite="lax",
-        max_age=60 * 60 * 24,  # 24 hours
-    )
-
-    return Token(access_token=access_token)
+    content = Token(access_token=access_token).model_dump()
+    response = JSONResponse(content=content)
+    _set_token_cookie(response, access_token, request.url.scheme == "https")
+    return response
 
 
 @router.post("/logout")
-async def logout(request: Request) -> dict[str, str]:
+async def logout() -> JSONResponse:
     """Log out the current user."""
-    response = Response()
+    response = JSONResponse(content={"message": "Logged out successfully"})
     response.delete_cookie(key="access_token")
-    return {"message": "Logged out successfully"}
+    return response
