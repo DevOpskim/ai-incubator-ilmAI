@@ -32,7 +32,7 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-site bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-700">Please log in to view your profile</p>
         </div>
@@ -42,14 +42,14 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-site bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-b-gray-900"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-site bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Profile</h1>
         

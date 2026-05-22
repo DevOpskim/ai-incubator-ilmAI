@@ -32,7 +32,7 @@ export default function UploadStatusPage() {
 
   if (!user) {
     return (
-      <div className="min-h-site bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-700">Please log in to view upload status</p>
         </div>
@@ -41,7 +41,7 @@ export default function UploadStatusPage() {
   }
 
   return (
-    <div className="min-h-site bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Upload Status</h1>
         
