@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession } from "@/app/hooks/useSession";
-import styles from "../styles/materials.module.css";
 
 export default function MaterialsPage() {
   const { user } = useSession();
@@ -43,7 +43,15 @@ export default function MaterialsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Materials</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Your Materials</h1>
+          <Link
+            href="/upload"
+            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition"
+          >
+            + Upload New
+          </Link>
+        </div>
         
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md mb-6">
@@ -58,8 +66,14 @@ export default function MaterialsPage() {
         ) : (
           <div className="space-y-4">
             {materials.length === 0 ? (
-              <div className="bg-white shadow-sm rounded-md p-6 text-gray-500 text-center">
-                No materials uploaded yet. Go to the upload page to add your first study material.
+              <div className="bg-white shadow-sm rounded-md p-12 text-center">
+                <p className="text-gray-500 mb-4">No materials uploaded yet.</p>
+                <Link
+                  href="/upload"
+                  className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition"
+                >
+                  Upload Your First Material
+                </Link>
               </div>
             ) : (
               materials.map((material) => (
