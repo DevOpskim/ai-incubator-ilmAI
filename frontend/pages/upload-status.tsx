@@ -3,7 +3,7 @@ import { useSession } from "@/app/hooks/useSession";
 import styles from "../styles/upload-status.module.css";
 
 export default function UploadStatusPage() {
-  const { user } = useSession();
+  const { user, loading: sessionLoading } = useSession();
   const [uploads, setUploads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +29,8 @@ export default function UploadStatusPage() {
       setLoading(false);
     }
   };
+
+  if (sessionLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-b-gray-900"></div></div>;
 
   if (!user) {
     return (

@@ -7,13 +7,15 @@ export const getServerSideProps = () => ({ props: {} });
 
 export default function UploadPage() {
   const router = useRouter();
-  const { user } = useSession();
+  const { user, loading: sessionLoading } = useSession();
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [topic, setTopic] = useState("");
   const [topics, setTopics] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  if (sessionLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-b-gray-900"></div></div>;
 
   if (!user) {
     router.push("/login");
