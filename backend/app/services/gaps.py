@@ -8,7 +8,7 @@ from app.models.tables import GapReport as GapReportModel
 from app.models.tables import Quiz as QuizModel
 from app.models.tables import ReviewQueueItem as ReviewQueueItemModel
 from app.schemas.gap import GapReport
-from app.services.llm import get_client
+from app.services.llm import generate_text
 
 
 def generate_gap_report(
@@ -80,15 +80,7 @@ def generate_gap_report(
         quiz_count=len(quiz_data),
     )
 
-    client = get_client()
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.5,
-        max_tokens=2000,
-    )
-
-    raw = response.choices[0].message.content or "{}"
+    raw = generate_text(prompt, temperature=0.5, max_tokens=2000)
     raw = raw.strip()
     if raw.startswith("```json"):
         raw = raw[7:]

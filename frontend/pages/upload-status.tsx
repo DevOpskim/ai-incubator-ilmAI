@@ -78,7 +78,7 @@ export default function UploadStatusPage() {
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                         upload.status === "pending" ? "bg-yellow-100 text-yellow-800" :
                         upload.status === "processing" ? "bg-blue-100 text-blue-800" :
-                        upload.status === "completed" ? "bg-green-100 text-green-800" :
+                        upload.status === "ready" ? "bg-green-100 text-green-800" :
                         upload.status === "failed" ? "bg-red-100 text-red-800" :
                         "bg-gray-100 text-gray-800"
                       }`}>
@@ -91,7 +91,7 @@ export default function UploadStatusPage() {
                       Error: {upload.error_message || "Unknown error occurred during processing"}
                     </p>
                   )}
-                  {upload.status === "completed" && (
+                  {upload.status === "ready" && (
                     <p className="mt-3 text-sm text-green-600">
                       Successfully processed! Material ID: {upload.material_id}
                     </p>

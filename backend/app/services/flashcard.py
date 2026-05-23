@@ -8,7 +8,7 @@ from app.models.tables import Flashcard as FlashcardModel
 from app.models.tables import FlashcardNoteType
 from app.models.tables import ReviewQueueItem as ReviewQueueItemModel
 from app.schemas.flashcard import DueCard, Flashcard, GenerateResponse
-from app.services.llm import get_client
+from app.services.llm import generate_text
 from app.services.retrieval import search_chunks
 
 
@@ -37,15 +37,7 @@ def generate_flashcards(
         "Return ONLY the JSON array."
     ).format(count=count, context=context)
 
-    client = get_client()
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-        max_tokens=4000,
-    )
-
-    raw = response.choices[0].message.content or "[]"
+    raw = generate_text(prompt, temperature=0.7, max_tokens=4000)
     raw = raw.strip()
     if raw.startswith("```json"):
         raw = raw[7:]

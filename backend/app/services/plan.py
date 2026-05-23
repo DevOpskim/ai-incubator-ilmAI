@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.models.tables import Goal, LearningPlan, Quiz, ReviewQueueItem, Topic
 from app.schemas.plan import GoalCreate, Plan, PlanDay
-from app.services.llm import get_client
+from app.services.llm import generate_text
 
 
 def create_goal(
@@ -133,15 +133,7 @@ def generate_plan(
         cards_mastered=cards_mastered,
     )
 
-    client = get_client()
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-        max_tokens=4000,
-    )
-
-    raw = response.choices[0].message.content or "{}"
+    raw = generate_text(prompt, temperature=0.7, max_tokens=4000)
     raw = raw.strip()
     if raw.startswith("```json"):
         raw = raw[7:]

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.tables import Quiz as QuizModel
 from app.schemas.quiz import GenerateResponse, QuizQuestion
-from app.services.llm import get_client
+from app.services.llm import generate_text
 from app.services.retrieval import search_chunks
 
 
@@ -49,15 +49,7 @@ def generate_questions(
         difficulty_instruction=difficulty_instructions.get(difficulty, difficulty_instructions["medium"]),
     )
 
-    client = get_client()
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-        max_tokens=3000,
-    )
-
-    raw = response.choices[0].message.content or "[]"
+    raw = generate_text(prompt, temperature=0.7, max_tokens=3000)
     raw = raw.strip()
     if raw.startswith("```json"):
         raw = raw[7:]
