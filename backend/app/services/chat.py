@@ -47,20 +47,22 @@ def process_chat_message(
     db.add(user_msg)
     db.commit()
 
-    relevant_chunks = search_chunks(
-        query=user_message,
-        user_id=user_id,
-        db=db,
-        limit=5,
-    )
-
-    context_chunks = [
-        {
-            "source_ref": c.source_ref or f"Chunk {c.chunk_index}",
-            "content": c.content,
-        }
-        for c in relevant_chunks
-    ]
+    try:
+        relevant_chunks = search_chunks(
+            query=user_message,
+            user_id=user_id,
+            db=db,
+            limit=5,
+        )
+        context_chunks = [
+            {
+                "source_ref": c.source_ref or f"Chunk {c.chunk_index}",
+                "content": c.content,
+            }
+            for c in relevant_chunks
+        ]
+    except Exception:
+        context_chunks = []
 
     history = get_chat_history(session_id, db)
 

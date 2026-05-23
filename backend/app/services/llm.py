@@ -59,20 +59,28 @@ def generate_chat_response(
 ) -> tuple[str, list[dict]]:
     provider = _get_provider(provider_name, model_name)
 
-    context_text = "\n\n".join(
-        f"[Source: {chunk['source_ref']}]\n{chunk['content']}"
-        for chunk in context_chunks
-    )
+    if context_chunks:
+        context_text = "\n\n".join(
+            f"[Source: {chunk['source_ref']}]\n{chunk['content']}"
+            for chunk in context_chunks
+        )
+        instructions = (
+            "CONTEXT FROM THEIR MATERIALS:\n"
+            f"{context_text}\n\n"
+            "INSTRUCTIONS:\n"
+            "- ONLY answer based on the provided context. If the context doesn't contain enough information, "
+            "say so and suggest the user upload more materials.\n"
+            "- For every claim, cite the specific source material using the [Source: ...] reference.\n"
+        )
+    else:
+        instructions = (
+            "NOTE: No study materials are loaded. Answer based on your general knowledge.\n\n"
+        )
 
     system_prompt = (
         "You are Ilm AI, a warm and patient study mentor. "
         "Your role is to help the user learn by guiding them through their own study materials.\n\n"
-        "CONTEXT FROM THEIR MATERIALS:\n"
-        f"{context_text}\n\n"
-        "INSTRUCTIONS:\n"
-        "- ONLY answer based on the provided context. If the context doesn't contain enough information, "
-        "say so and suggest the user upload more materials.\n"
-        "- For every claim, cite the specific source material using the [Source: ...] reference.\n"
+        f"{instructions}"
         "- Use a Socratic mentoring style — ask guiding questions, don't just give answers.\n"
         f"- Respond in the user's preferred language ({preferred_language}).\n"
         "- Be encouraging and supportive.\n"
