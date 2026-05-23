@@ -37,11 +37,17 @@ async def upload_material(
             content={"message": f"File type not allowed. Allowed: {', '.join(allowed_extensions)}"},
         )
 
+    MAX_SIZE = 10 * 1024 * 1024
+    content = await file.read()
+    if len(content) > MAX_SIZE:
+        return JSONResponse(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            content={"message": "File too large. Maximum size is 10 MB."},
+        )
+
     file_id = uuid4()
     filename = f"{file_id}{file_ext}"
     file_path = UPLOAD_DIR / filename
-
-    content = await file.read()
     try:
         with open(file_path, "wb") as f:
             f.write(content)

@@ -41,6 +41,10 @@ export default function UploadPage() {
       setError("Please select a file");
       return;
     }
+    if (file.size > 10 * 1024 * 1024) {
+      setError("File too large. Maximum size is 10 MB.");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("file", file);
