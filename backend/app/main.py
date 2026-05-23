@@ -1,3 +1,5 @@
+from threading import Thread
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -24,6 +26,9 @@ def init_db():
         db.commit()
     finally:
         db.close()
+
+    from app.processing import resume_pending_processing
+    Thread(target=resume_pending_processing, daemon=True).start()
 
 app.add_middleware(
     CORSMiddleware,

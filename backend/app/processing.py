@@ -82,6 +82,25 @@ def process_material_upload(upload_id: str):
     except Exception as e:
         upload.status = "failed"
         db.commit()
-        raise Exception(f"Failed to process upload {upload_id}: {str(e)}")
+        print(f"Failed to process upload {upload_id}: {str(e)}")
+    finally:
+        db.close()
+
+
+def resume_pending_processing():
+    db = SessionLocal()
+    try:
+        stuck = db.query(Upload).filter(Upload.status.in_(["processing", "pending"])).all()
+        if not stuck:
+            return
+        print(f"Resuming {len(stuck)} stuck uploads...")
+        for upload in stuck:
+            upload.status = "pending"
+        db.commit()
+        for upload in stuck:
+            try:
+                process_material_upload(str(upload.id))
+            except Exception as e:
+                print(f"Failed to reprocess upload {upload.id}: {e}")
     finally:
         db.close()
