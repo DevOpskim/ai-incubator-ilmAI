@@ -11,17 +11,6 @@ export default function UploadPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  if (sessionLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-b-gray-900"></div></div>;
-
-  if (!user) {
-    router.push("/login");
-    return null;
-  }
-
-  useEffect(() => {
-    fetchTopics();
-  }, []);
-
   const fetchTopics = async () => {
     try {
       const response = await fetch("/api/materials/topics");
@@ -30,9 +19,12 @@ export default function UploadPage() {
       setTopics(data);
     } catch (err) {
       console.error("Error fetching topics:", err);
-      // Still allow upload without topic selection
     }
   };
+
+  useEffect(() => {
+    if (user) fetchTopics();
+  }, [user]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -79,6 +71,13 @@ export default function UploadPage() {
       setLoading(false);
     }
   };
+
+  if (sessionLoading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-b-gray-900"></div></div>;
+
+  if (!user) {
+    router.push("/login");
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
