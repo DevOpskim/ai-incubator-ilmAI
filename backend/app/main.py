@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.health import router as health_router
-from app.routers import auth, chat, flashcard, gaps, materials, plan, quiz, users
+from app.routers import auth, chat, flashcard, gaps, materials, plan, quiz, topics, users
 
 app = FastAPI(title="Ilm AI Backend", version="0.1.0")
 
@@ -47,3 +47,4 @@ app.include_router(quiz.router)
 app.include_router(flashcard.router)
 app.include_router(gaps.router)
 app.include_router(plan.router)
+app.include_router(topics.router)

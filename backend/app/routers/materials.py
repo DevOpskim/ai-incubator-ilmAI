@@ -7,12 +7,19 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from pydantic import BaseModel
+
 from app.core.auth import get_current_active_user
 from app.db.session import get_db
 from app.models.tables import Material as MaterialModel, Upload as UploadModel
+from app.models.tables import User
 from app.processing import process_material_upload
 from app.schemas.material import Material, Upload
-from app.models.tables import User
+
+
+class UpdateMaterialBody(BaseModel):
+    topic_id: str | None = None
+    title: str | None = None
 
 router = APIRouter(prefix="/materials", tags=["Materials"])
 
@@ -131,3 +138,48 @@ async def get_upload_status(
         raise HTTPException(status_code=403, detail="Not authorized")
 
     return upload
+
+
+@router.delete("/{material_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_material(
+    material_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+):
+    material = db.query(MaterialModel).filter(MaterialModel.id == material_id).first()
+    if not material:
+        raise HTTPException(status_code=404, detail="Material not found")
+    if material.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Delete file from disk
+    uploads = db.query(UploadModel).filter(UploadModel.material_id == material.id).all()
+    for upload in uploads:
+        file_path = Path(upload.storage_path)
+        if file_path.exists():
+            file_path.unlink()
+
+    db.delete(material)
+    db.commit()
+
+
+@router.patch("/{material_id}", response_model=Material)
+async def update_material(
+    material_id: str,
+    body: UpdateMaterialBody,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+) -> Material:
+    material = db.query(MaterialModel).filter(MaterialModel.id == material_id).first()
+    if not material:
+        raise HTTPException(status_code=404, detail="Material not found")
+    if material.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    if body.topic_id is not None:
+        material.topic_id = body.topic_id if body.topic_id else None
+    if body.title is not None:
+        material.title = body.title
+    db.commit()
+    db.refresh(material)
+    return material
