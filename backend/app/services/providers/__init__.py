@@ -30,5 +30,11 @@ def get_chat_provider() -> BaseLLMProvider:
             api_key=settings.openrouter_api_key,
             model=settings.openrouter_model,
         )
+    elif provider_name == "anthropic":
+        from app.services.providers.anthropic_provider import AnthropicProvider
+        return AnthropicProvider(
+            api_key=settings.anthropic_api_key,
+            model=settings.anthropic_model,
+        )
     else:
         raise ValueError(f"Unknown LLM provider: {provider_name}")
