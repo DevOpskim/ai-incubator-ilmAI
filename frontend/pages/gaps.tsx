@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSession } from "@/app/hooks/useSession";
+import Header from "@/components/Header";
 
 type GapItem = {
   area: string;
@@ -59,14 +60,14 @@ export default function GapsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <><Header /><div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <p className="text-gray-700">Please log in to view your progress.</p>
-      </div>
+      </div></>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <><Header /><div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Knowledge Gaps</h1>
@@ -158,6 +159,6 @@ export default function GapsPage() {
           </div>
         )}
       </div>
-    </div>
+    </div></>
   );
 }

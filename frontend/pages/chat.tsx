@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "@/app/hooks/useSession";
+import Header from "@/components/Header";
 
 type Message = {
   id: string;
@@ -140,22 +141,22 @@ export default function ChatPage() {
 
   if (sessionLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <><Header /><div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-      </div>
+      </div></>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <><Header /><div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <p className="text-gray-700">Please log in to use the AI mentor.</p>
-      </div>
+      </div></>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <><Header /><div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside className="w-72 bg-white border-r border-gray-200 flex flex-col">
         <div className="p-4 border-b border-gray-200">
@@ -279,6 +280,6 @@ export default function ChatPage() {
           </div>
         )}
       </main>
-    </div>
+    </div></>
   );
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSession } from "@/app/hooks/useSession";
+import Header from "@/components/Header";
 
 export default function MaterialsPage() {
   const { user, loading: sessionLoading } = useSession();
@@ -34,16 +35,16 @@ export default function MaterialsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <><Header /><div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-700">Please log in to view your materials</p>
         </div>
-      </div>
+      </div></>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <><Header /><div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Your Materials</h1>
@@ -97,6 +98,7 @@ export default function MaterialsPage() {
           </div>
         )}
       </div>
-    </div>
+    </div></>
   );
 }
+

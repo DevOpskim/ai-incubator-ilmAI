@@ -1,6 +1,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Header from "@/components/Header";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -76,7 +77,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <><Header /><div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
           Sign Up for Ilm AI
@@ -197,6 +198,6 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
-    </div>
+    </div></>
   );
 }

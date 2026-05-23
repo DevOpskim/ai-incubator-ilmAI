@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSession } from "@/app/hooks/useSession";
+import Header from "@/components/Header";
 
 type Question = {
   id: string;
@@ -84,14 +85,14 @@ export default function QuizPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <><Header /><div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <p className="text-gray-700">Please log in to take quizzes.</p>
-      </div>
+      </div></>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <><Header /><div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Practice Quiz</h1>
 
@@ -221,6 +222,6 @@ export default function QuizPage() {
           </div>
         )}
       </div>
-    </div>
+    </div></>
   );
 }
