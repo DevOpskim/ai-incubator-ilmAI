@@ -32,6 +32,8 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     content: str
+    provider: str | None = None
+    model: str | None = None
 
 
 class ChatResponse(BaseModel):

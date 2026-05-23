@@ -87,6 +87,8 @@ async def send_message(
         user_id=current_user.id,
         preferred_language=current_user.preferred_language,
         db=db,
+        provider_name=body.provider,
+        model_name=body.model,
     )
 
     return result

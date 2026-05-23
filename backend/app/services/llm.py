@@ -1,13 +1,13 @@
 from openai import OpenAI
 
 from app.config import get_settings
-from app.services.providers import get_chat_provider
+from app.services.providers import create_provider, get_chat_provider
 from app.services.providers.base import BaseLLMProvider
 
 settings = get_settings()
 
 _embedding_client: OpenAI | None = None
-_chat_provider: BaseLLMProvider | None = None
+_default_chat_provider: BaseLLMProvider | None = None
 
 
 def get_embedding_client() -> OpenAI:
@@ -17,11 +17,13 @@ def get_embedding_client() -> OpenAI:
     return _embedding_client
 
 
-def get_chat_provider_singleton() -> BaseLLMProvider:
-    global _chat_provider
-    if _chat_provider is None:
-        _chat_provider = get_chat_provider()
-    return _chat_provider
+def _get_provider(provider_name: str | None, model_name: str | None) -> BaseLLMProvider:
+    if provider_name:
+        return create_provider(provider_name, model_name)
+    global _default_chat_provider
+    if _default_chat_provider is None:
+        _default_chat_provider = get_chat_provider()
+    return _default_chat_provider
 
 
 def generate_embedding(text: str) -> list[float]:
@@ -37,8 +39,10 @@ def generate_text(
     prompt: str,
     temperature: float = 0.7,
     max_tokens: int = 2000,
+    provider_name: str | None = None,
+    model_name: str | None = None,
 ) -> str:
-    provider = get_chat_provider_singleton()
+    provider = _get_provider(provider_name, model_name)
     return provider.chat_completion(
         messages=[{"role": "user", "content": prompt}],
         temperature=temperature,
@@ -50,8 +54,10 @@ def generate_chat_response(
     messages: list[dict],
     context_chunks: list[dict],
     preferred_language: str = "en",
+    provider_name: str | None = None,
+    model_name: str | None = None,
 ) -> tuple[str, list[dict]]:
-    provider = get_chat_provider_singleton()
+    provider = _get_provider(provider_name, model_name)
 
     context_text = "\n\n".join(
         f"[Source: {chunk['source_ref']}]\n{chunk['content']}"

@@ -35,6 +35,8 @@ def process_chat_message(
     user_id: UUID,
     preferred_language: str,
     db: Session,
+    provider_name: str | None = None,
+    model_name: str | None = None,
 ) -> ChatResponse:
     user_msg = ChatMessageModel(
         id=uuid4(),
@@ -66,6 +68,8 @@ def process_chat_message(
         messages=history,
         context_chunks=context_chunks,
         preferred_language=preferred_language,
+        provider_name=provider_name,
+        model_name=model_name,
     )
 
     ai_msg = ChatMessageModel(

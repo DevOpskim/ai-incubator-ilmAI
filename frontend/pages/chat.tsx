@@ -16,6 +16,47 @@ type Session = {
   created_at: string;
 };
 
+const PROVIDERS: { label: string; value: string; models: { label: string; value: string }[] }[] = [
+  {
+    label: "OpenAI",
+    value: "openai",
+    models: [
+      { label: "GPT-4o", value: "gpt-4o" },
+      { label: "GPT-4o Mini", value: "gpt-4o-mini" },
+    ],
+  },
+  {
+    label: "Anthropic",
+    value: "anthropic",
+    models: [
+      { label: "Claude Sonnet 4", value: "claude-sonnet-4-20250514" },
+      { label: "Claude 3 Haiku", value: "claude-3-haiku-20240307" },
+    ],
+  },
+  {
+    label: "Groq",
+    value: "groq",
+    models: [
+      { label: "Llama 3.1 70B", value: "llama-3.1-70b-versatile" },
+      { label: "Llama 3.1 8B", value: "llama-3.1-8b-instant" },
+      { label: "Mixtral 8x7B", value: "mixtral-8x7b-32768" },
+    ],
+  },
+  {
+    label: "DeepSeek",
+    value: "deepseek",
+    models: [{ label: "DeepSeek Chat", value: "deepseek-chat" }],
+  },
+  {
+    label: "OpenRouter",
+    value: "openrouter",
+    models: [
+      { label: "GPT-4o", value: "openai/gpt-4o" },
+      { label: "Claude 3.5 Sonnet", value: "anthropic/claude-3.5-sonnet" },
+    ],
+  },
+];
+
 export default function ChatPage() {
   const { user, loading: sessionLoading } = useSession();
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -23,6 +64,8 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState("openai");
+  const [selectedModel, setSelectedModel] = useState("gpt-4o");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -74,6 +117,11 @@ export default function ChatPage() {
     } catch {}
   };
 
+  useEffect(() => {
+    const provider = PROVIDERS.find((p) => p.value === selectedProvider);
+    if (provider) setSelectedModel(provider.models[0].value);
+  }, [selectedProvider]);
+
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !currentSessionId || sending) return;
@@ -96,7 +144,7 @@ export default function ChatPage() {
       const res = await fetch(`/api/chat/sessions/${currentSessionId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: userMessage }),
+        body: JSON.stringify({ content: userMessage, provider: selectedProvider, model: selectedModel }),
       });
 
       if (res.ok) {
@@ -159,13 +207,34 @@ export default function ChatPage() {
     <><Header /><div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside className="w-72 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-gray-200 space-y-3">
           <button
             onClick={createSession}
             className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
           >
             + New Chat
           </button>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-500">AI Agent</label>
+            <select
+              value={selectedProvider}
+              onChange={(e) => setSelectedProvider(e.target.value)}
+              className="w-full text-sm rounded-md border border-gray-300 px-2 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              {PROVIDERS.map((p) => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </select>
+            <select
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+              className="w-full text-sm rounded-md border border-gray-300 px-2 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+              {PROVIDERS.find((p) => p.value === selectedProvider)?.models.map((m) => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <nav className="flex-1 overflow-y-auto p-2 space-y-1">
           {sessions.map((s) => (
