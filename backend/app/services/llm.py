@@ -13,23 +13,21 @@ _default_chat_provider: BaseLLMProvider | None = None
 def get_embedding_client() -> OpenAI:
     global _embedding_client
     if _embedding_client is None:
-        _embedding_client = OpenAI(api_key=settings.openai_api_key)
+        if settings.openrouter_api_key:
+            _embedding_client = OpenAI(
+                api_key=settings.openrouter_api_key,
+                base_url="https://openrouter.ai/api/v1",
+            )
+        else:
+            _embedding_client = OpenAI(api_key=settings.openai_api_key)
     return _embedding_client
-
-
-def _get_provider(provider_name: str | None, model_name: str | None) -> BaseLLMProvider:
-    if provider_name:
-        return create_provider(provider_name, model_name)
-    global _default_chat_provider
-    if _default_chat_provider is None:
-        _default_chat_provider = get_chat_provider()
-    return _default_chat_provider
 
 
 def generate_embedding(text: str) -> list[float]:
     client = get_embedding_client()
+    model = "text-embedding-ada-002"
     response = client.embeddings.create(
-        model="text-embedding-ada-002",
+        model=model,
         input=text,
     )
     return response.data[0].embedding
