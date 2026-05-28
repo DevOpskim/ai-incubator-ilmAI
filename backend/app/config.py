@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
 
     openai_model: str = "gpt-4o"
-    groq_model: str = "llama-3.1-70b-versatile"
+    groq_model: str = "llama-3.3-70b-versatile"
     deepseek_model: str = "deepseek-chat"
     openrouter_model: str = "openai/gpt-4o"
     anthropic_model: str = "claude-3-haiku-20240307"
