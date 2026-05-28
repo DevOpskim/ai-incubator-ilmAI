@@ -32,11 +32,13 @@ export default function QuizPage() {
   const [questions, setQuestions] = useState<Question[] | null>(null);
   const [selections, setSelections] = useState<Record<string, number>>({});
   const [questionLoading, setQuestionLoading] = useState(false);
+  const [error, setError] = useState("");
   const [result, setResult] = useState<QuizResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const generateQuiz = async () => {
     setQuestionLoading(true);
+    setError("");
     setQuestions(null);
     setSelections({});
     setResult(null);
@@ -49,14 +51,20 @@ export default function QuizPage() {
       if (res.ok) {
         const data = await res.json();
         setQuestions(data.questions);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.detail || "Failed to generate quiz");
       }
-    } catch {}
+    } catch {
+      setError("Network error — is the backend running?");
+    }
     setQuestionLoading(false);
   };
 
   const submitQuiz = async () => {
     if (!questions) return;
     setSubmitting(true);
+    setError("");
     try {
       const answers = questions.map((q) => ({
         question_id: q.id,
@@ -70,8 +78,13 @@ export default function QuizPage() {
       if (res.ok) {
         const data = await res.json();
         setResult(data);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.detail || "Failed to submit quiz");
       }
-    } catch {}
+    } catch {
+      setError("Network error — is the backend running?");
+    }
     setSubmitting(false);
   };
 
@@ -95,6 +108,12 @@ export default function QuizPage() {
     <><Header /><div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 py-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Practice Quiz</h1>
+
+        {error && (
+          <div className="mb-6">
+            <p className="text-red-600 bg-red-50 border border-red-200 rounded-md px-4 py-3">{error}</p>
+          </div>
+        )}
 
         {!questions && !result && (
           <div className="bg-white rounded-lg shadow-sm p-6">

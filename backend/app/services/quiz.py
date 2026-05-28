@@ -16,13 +16,15 @@ def generate_questions(
     count: int,
     db: Session,
 ) -> GenerateResponse:
-    query = f"Generate quiz questions about {'the selected topic' if topic_id else 'my study materials'} at {difficulty} difficulty"
-    chunks = search_chunks(query=query, user_id=user_id, db=db, limit=10)
-
-    context = "\n\n".join(
-        f"[Source: {c.source_ref or 'unknown'}]\n{c.content}"
-        for c in chunks
-    )
+    try:
+        query = f"Generate quiz questions about {'the selected topic' if topic_id else 'my study materials'} at {difficulty} difficulty"
+        chunks = search_chunks(query=query, user_id=user_id, db=db, limit=10)
+        context = "\n\n".join(
+            f"[Source: {c.source_ref or 'unknown'}]\n{c.content}"
+            for c in chunks
+        )
+    except Exception:
+        context = ""
 
     difficulty_instructions = {
         "easy": "Ask basic recall questions that test surface-level understanding.",
@@ -30,24 +32,42 @@ def generate_questions(
         "hard": "Ask challenging questions that require deep analysis and synthesis of multiple concepts.",
     }
 
-    prompt = (
-        "You are a quiz generator. Generate exactly {count} multiple-choice questions "
-        "based ONLY on the provided study material context.\n\n"
-        "CONTEXT:\n{context}\n\n"
-        "DIFFICULTY: {difficulty}\n{difficulty_instruction}\n\n"
-        "Return a JSON array of objects with these fields:\n"
-        "- question (string)\n"
-        "- options (array of 4 strings)\n"
-        "- correct_index (integer, 0-3, the index of the correct answer)\n"
-        "- explanation (string, why the answer is correct, referencing source)\n"
-        "- source_ref (string, the source reference from the context)\n\n"
-        "Return ONLY the JSON array, no other text."
-    ).format(
-        count=count,
-        context=context,
-        difficulty=difficulty,
-        difficulty_instruction=difficulty_instructions.get(difficulty, difficulty_instructions["medium"]),
-    )
+    if context:
+        prompt = (
+            "You are a quiz generator. Generate exactly {count} multiple-choice questions "
+            "based on the provided study material context.\n\n"
+            "CONTEXT:\n{context}\n\n"
+            "DIFFICULTY: {difficulty}\n{difficulty_instruction}\n\n"
+            "Return a JSON array of objects with these fields:\n"
+            "- question (string)\n"
+            "- options (array of 4 strings)\n"
+            "- correct_index (integer, 0-3, the index of the correct answer)\n"
+            "- explanation (string, why the answer is correct, referencing source)\n"
+            "- source_ref (string, the source reference from the context)\n\n"
+            "Return ONLY the JSON array, no other text."
+        ).format(
+            count=count,
+            context=context,
+            difficulty=difficulty,
+            difficulty_instruction=difficulty_instructions.get(difficulty, difficulty_instructions["medium"]),
+        )
+    else:
+        prompt = (
+            "You are a quiz generator. Generate exactly {count} multiple-choice questions "
+            "about general academic topics.\n\n"
+            "DIFFICULTY: {difficulty}\n{difficulty_instruction}\n\n"
+            "Return a JSON array of objects with these fields:\n"
+            "- question (string)\n"
+            "- options (array of 4 strings)\n"
+            "- correct_index (integer, 0-3, the index of the correct answer)\n"
+            "- explanation (string, why the answer is correct)\n"
+            "- source_ref (string, the topic reference)\n\n"
+            "Return ONLY the JSON array, no other text."
+        ).format(
+            count=count,
+            difficulty=difficulty,
+            difficulty_instruction=difficulty_instructions.get(difficulty, difficulty_instructions["medium"]),
+        )
 
     raw = generate_text(prompt, temperature=0.7, max_tokens=3000)
     raw = raw.strip()

@@ -24,6 +24,7 @@ export default function FlashcardsPage() {
   const [flipped, setFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState("");
   const [sessionStats, setSessionStats] = useState({ reviewed: 0, correct: 0 });
   const [finished, setFinished] = useState(false);
 
@@ -48,6 +49,7 @@ export default function FlashcardsPage() {
 
   const generateCards = async () => {
     setGenerating(true);
+    setError("");
     try {
       const res = await fetch("/api/flashcards/generate", {
         method: "POST",
@@ -56,8 +58,13 @@ export default function FlashcardsPage() {
       });
       if (res.ok) {
         await fetchDueCards();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.detail || "Failed to generate flashcards");
       }
-    } catch {}
+    } catch {
+      setError("Network error — is the backend running?");
+    }
     setGenerating(false);
   };
 
@@ -131,6 +138,12 @@ export default function FlashcardsPage() {
         {generating && (
           <div className="text-center py-12 text-gray-400">
             Generating flashcards from your materials...
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center py-6">
+            <p className="text-red-600 bg-red-50 border border-red-200 rounded-md px-4 py-3">{error}</p>
           </div>
         )}
 

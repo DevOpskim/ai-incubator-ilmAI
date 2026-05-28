@@ -17,25 +17,44 @@ def generate_flashcards(
     count: int,
     db: Session,
 ) -> GenerateResponse:
-    query = "Generate flashcards from my study materials covering key concepts, definitions, and important facts"
-    chunks = search_chunks(query=query, user_id=user_id, db=db, limit=15)
+    try:
+        chunks = search_chunks(
+            query="Generate flashcards from my study materials covering key concepts, definitions, and important facts",
+            user_id=user_id,
+            db=db,
+            limit=15,
+        )
+        context = "\n\n".join(
+            f"[Source: {c.source_ref or 'unknown'}]\n{c.content}" for c in chunks
+        )
+    except Exception:
+        context = ""
 
-    context = "\n\n".join(
-        f"[Source: {c.source_ref or 'unknown'}]\n{c.content}" for c in chunks
-    )
-
-    prompt = (
-        "You are a flashcard generator. Create exactly {count} flashcards "
-        "based ONLY on the provided study material.\n\n"
-        "CONTEXT:\n{context}\n\n"
-        "Return a JSON array of objects with these fields:\n"
-        "- front (string, the question or prompt)\n"
-        "- back (string, the answer)\n"
-        "- source_ref (string, the source reference)\n\n"
-        "Make the front concise and the back complete but not verbose. "
-        "Focus on key concepts, definitions, relationships, and important facts. "
-        "Return ONLY the JSON array."
-    ).format(count=count, context=context)
+    if context:
+        prompt = (
+            "You are a flashcard generator. Create exactly {count} flashcards "
+            "based on the provided study material.\n\n"
+            "CONTEXT:\n{context}\n\n"
+            "Return a JSON array of objects with these fields:\n"
+            "- front (string, the question or prompt)\n"
+            "- back (string, the answer)\n"
+            "- source_ref (string, the material reference)\n\n"
+            "Make the front concise and the back complete but not verbose. "
+            "Focus on key concepts, definitions, relationships, and important facts. "
+            "Return ONLY the JSON array."
+        ).format(count=count, context=context)
+    else:
+        prompt = (
+            "You are a flashcard generator. Create exactly {count} flashcards "
+            "about general academic topics suitable for study.\n\n"
+            "Return a JSON array of objects with these fields:\n"
+            "- front (string, the question or prompt)\n"
+            "- back (string, the answer)\n"
+            "- source_ref (string, the topic reference)\n\n"
+            "Make the front concise and the back complete but not verbose. "
+            "Focus on key concepts, definitions, relationships, and important facts. "
+            "Return ONLY the JSON array."
+        ).format(count=count)
 
     raw = generate_text(prompt, temperature=0.7, max_tokens=4000)
     raw = raw.strip()
