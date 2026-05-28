@@ -23,7 +23,10 @@ def generate_questions(
             f"[Source: {c.source_ref or 'unknown'}]\n{c.content}"
             for c in chunks
         )
-    except Exception:
+        if not chunks:
+            print(f"QUIZ_DEBUG: search_chunks returned 0 chunks for user {user_id}")
+    except Exception as e:
+        print(f"QUIZ_DEBUG: search_chunks failed: {e}")
         context = ""
 
     difficulty_instructions = {

@@ -33,7 +33,7 @@ async def generate(
 
     for card in result.flashcards:
         enqueue_flashcard(
-            flashcard_id=UUID(card.id),
+            flashcard_id=card.id,
             user_id=current_user.id,
             db=db,
         )

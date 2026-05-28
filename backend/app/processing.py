@@ -107,9 +107,11 @@ def resume_pending_processing():
 
 
 def retry_null_embeddings():
+    print("RETRY_EMBEDDINGS: Starting...")
     db = SessionLocal()
     try:
         chunks = db.query(MaterialChunk).filter(MaterialChunk.embedding.is_(None)).all()
+        print(f"RETRY_EMBEDDINGS: Found {len(chunks)} chunks with null embeddings")
         if not chunks:
             return
         print(f"Retrying embeddings for {len(chunks)} chunks...")
