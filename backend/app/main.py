@@ -27,8 +27,9 @@ def init_db():
     finally:
         db.close()
 
-    from app.processing import resume_pending_processing
+    from app.processing import resume_pending_processing, retry_null_embeddings
     Thread(target=resume_pending_processing, daemon=True).start()
+    Thread(target=retry_null_embeddings, daemon=True).start()
 
 app.add_middleware(
     CORSMiddleware,

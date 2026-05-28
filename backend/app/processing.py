@@ -104,3 +104,22 @@ def resume_pending_processing():
                 print(f"Failed to reprocess upload {upload.id}: {e}")
     finally:
         db.close()
+
+
+def retry_null_embeddings():
+    db = SessionLocal()
+    try:
+        chunks = db.query(MaterialChunk).filter(MaterialChunk.embedding.is_(None)).all()
+        if not chunks:
+            return
+        print(f"Retrying embeddings for {len(chunks)} chunks...")
+        for chunk in chunks:
+            try:
+                embedding = generate_embedding(chunk.content)
+                chunk.embedding = embedding
+                db.commit()
+            except Exception as e:
+                print(f"Embedding retry failed for chunk {chunk.id}: {e}")
+        print("Finished retrying embeddings.")
+    finally:
+        db.close()
