@@ -25,7 +25,10 @@ def get_embedding_client() -> OpenAI:
 
 def generate_embedding(text: str) -> list[float]:
     client = get_embedding_client()
-    model = "text-embedding-ada-002"
+    if settings.openrouter_api_key:
+        model = "openai/text-embedding-ada-002"
+    else:
+        model = "text-embedding-ada-002"
     response = client.embeddings.create(
         model=model,
         input=text,

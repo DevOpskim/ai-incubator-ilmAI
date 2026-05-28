@@ -4,8 +4,8 @@ from uuid import UUID, uuid4
 
 from sqlalchemy.orm import Session
 
-from app.models.tables import Goal, LearningPlan, Quiz, ReviewQueueItem, Topic
-from app.schemas.plan import GoalCreate, Plan, PlanDay
+from app.models.tables import Goal as GoalModel, LearningPlan, Quiz, ReviewQueueItem, Topic
+from app.schemas.plan import Goal as GoalSchema, GoalCreate, Plan, PlanDay
 from app.services.llm import generate_text
 
 
@@ -13,8 +13,8 @@ def create_goal(
     user_id: UUID,
     body: GoalCreate,
     db: Session,
-) -> Goal:
-    goal = Goal(
+) -> GoalSchema:
+    goal = GoalModel(
         id=uuid4(),
         user_id=user_id,
         description=body.description,
@@ -24,7 +24,7 @@ def create_goal(
     db.commit()
     db.refresh(goal)
 
-    return Goal(
+    return GoalSchema(
         id=goal.id,
         description=goal.description,
         target_date=goal.target_date,
@@ -36,15 +36,15 @@ def create_goal(
 def list_goals(
     user_id: UUID,
     db: Session,
-) -> list[Goal]:
+) -> list[GoalSchema]:
     goals = (
-        db.query(Goal)
-        .filter(Goal.user_id == user_id)
-        .order_by(Goal.created_at.desc())
+        db.query(GoalModel)
+        .filter(GoalModel.user_id == user_id)
+        .order_by(GoalModel.created_at.desc())
         .all()
     )
     return [
-        Goal(
+        GoalSchema(
             id=g.id,
             description=g.description,
             target_date=g.target_date,
@@ -61,12 +61,12 @@ def generate_plan(
     db: Session,
 ) -> Plan:
     if goal_id:
-        goal = db.query(Goal).filter(Goal.id == goal_id, Goal.user_id == user_id).first()
+        goal = db.query(GoalModel).filter(GoalModel.id == goal_id, GoalModel.user_id == user_id).first()
     else:
         goal = (
-            db.query(Goal)
-            .filter(Goal.user_id == user_id)
-            .order_by(Goal.created_at.desc())
+            db.query(GoalModel)
+            .filter(GoalModel.user_id == user_id)
+            .order_by(GoalModel.created_at.desc())
             .first()
         )
 
@@ -175,7 +175,7 @@ def generate_plan(
         db.refresh(existing)
 
     return Plan(
-        goal=Goal(
+        goal=GoalSchema(
             id=goal.id,
             description=goal.description,
             target_date=goal.target_date,
@@ -201,14 +201,14 @@ def get_plan(
     if not plan:
         return None
 
-    goal = db.query(Goal).filter(Goal.id == plan.goal_id).first()
+    goal = db.query(GoalModel).filter(GoalModel.id == plan.goal_id).first()
     if not goal:
         return None
 
     days = [PlanDay(**d) for d in plan.plan_json.get("days", [])]
 
     return Plan(
-        goal=Goal(
+        goal=GoalSchema(
             id=goal.id,
             description=goal.description,
             target_date=goal.target_date,
