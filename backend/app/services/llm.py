@@ -33,6 +33,15 @@ def generate_embedding(text: str) -> list[float]:
     return response.data[0].embedding
 
 
+def _get_provider(provider_name: str | None, model_name: str | None) -> BaseLLMProvider:
+    if provider_name:
+        return create_provider(provider_name, model_name)
+    global _default_chat_provider
+    if _default_chat_provider is None:
+        _default_chat_provider = get_chat_provider()
+    return _default_chat_provider
+
+
 def generate_text(
     prompt: str,
     temperature: float = 0.7,
