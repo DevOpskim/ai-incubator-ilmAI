@@ -145,8 +145,8 @@ class Material(Base):
 
     topic: Mapped["Topic | None"] = relationship(back_populates="materials")
     folder: Mapped["Folder | None"] = relationship(back_populates="materials")
-    uploads: Mapped[list["Upload"]] = relationship(back_populates="material")
-    chunks: Mapped[list["MaterialChunk"]] = relationship(back_populates="material")
+    uploads: Mapped[list["Upload"]] = relationship(back_populates="material", passive_deletes=True)
+    chunks: Mapped[list["MaterialChunk"]] = relationship(back_populates="material", passive_deletes=True)
 
 
 class Upload(Base):
