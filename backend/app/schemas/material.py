@@ -29,6 +29,7 @@ class Material(MaterialBase):
     id: UUID
     user_id: UUID
     topic_id: UUID | None
+    folder_id: UUID | None
     created_at: datetime
     updated_at: datetime
 

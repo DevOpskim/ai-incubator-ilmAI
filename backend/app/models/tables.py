@@ -50,6 +50,7 @@ class User(Base):
     )
 
     topics: Mapped[list["Topic"]] = relationship(back_populates="user")
+    folders: Mapped[list["Folder"]] = relationship(back_populates="user")
     goals: Mapped[list["Goal"]] = relationship(back_populates="user")
     subscription: Mapped["Subscription | None"] = relationship(
         back_populates="user", uselist=False
@@ -79,6 +80,43 @@ class Topic(Base):
     materials: Mapped[list["Material"]] = relationship(back_populates="topic")
 
 
+class Folder(Base):
+    __tablename__ = "folders"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    parent_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("folders.id", ondelete="CASCADE")
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    user: Mapped["User"] = relationship(back_populates="folders")
+    children: Mapped[list["Folder"]] = relationship(
+        back_populates="parent",
+        cascade="all, delete-orphan",
+        foreign_keys=[parent_id],
+    )
+    parent: Mapped["Folder | None"] = relationship(
+        back_populates="children",
+        remote_side="Folder.id",
+        foreign_keys=[parent_id],
+    )
+    materials: Mapped[list["Material"]] = relationship(back_populates="folder")
+
+
 class Material(Base):
     __tablename__ = "materials"
 
@@ -90,6 +128,9 @@ class Material(Base):
     )
     topic_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("topics.id", ondelete="SET NULL")
+    )
+    folder_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("folders.id", ondelete="SET NULL")
     )
     title: Mapped[str] = mapped_column(String(300), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
@@ -103,6 +144,7 @@ class Material(Base):
     )
 
     topic: Mapped["Topic | None"] = relationship(back_populates="materials")
+    folder: Mapped["Folder | None"] = relationship(back_populates="materials")
     uploads: Mapped[list["Upload"]] = relationship(back_populates="material")
     chunks: Mapped[list["MaterialChunk"]] = relationship(back_populates="material")
 

@@ -19,6 +19,7 @@ from app.schemas.material import Material, Upload
 
 class UpdateMaterialBody(BaseModel):
     topic_id: str | None = None
+    folder_id: str | None = None
     title: str | None = None
 
 router = APIRouter(prefix="/materials", tags=["Materials"])
@@ -178,6 +179,8 @@ async def update_material(
 
     if body.topic_id is not None:
         material.topic_id = body.topic_id if body.topic_id else None
+    if body.folder_id is not None:
+        material.folder_id = body.folder_id if body.folder_id else None
     if body.title is not None:
         material.title = body.title
     db.commit()
