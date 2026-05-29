@@ -16,6 +16,7 @@ def generate_flashcards(
     user_id: UUID,
     count: int,
     db: Session,
+    deck_id: UUID | None = None,
 ) -> GenerateResponse:
     try:
         chunks = search_chunks(
@@ -85,6 +86,7 @@ def generate_flashcards(
         card = FlashcardModel(
             id=uuid4(),
             user_id=user_id,
+            deck_id=deck_id,
             front=c.get("front", ""),
             back=c.get("back", ""),
             note_type_id=basic_type.id,

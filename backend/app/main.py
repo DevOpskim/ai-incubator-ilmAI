@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.health import router as health_router
-from app.routers import auth, chat, flashcard, folders, gaps, materials, plan, quiz, topics, users
+from app.routers import auth, chat, decks, flashcard, folders, gaps, materials, plan, quiz, topics, users
 
 app = FastAPI(title="Ilm AI Backend", version="0.1.0")
 
@@ -19,11 +19,15 @@ def init_db():
     Base.metadata.create_all(bind=engine)
 
     inspector = inspect(engine)
-    cols = {c["name"] for c in inspector.get_columns("materials")}
-    if "folder_id" not in cols:
-        with engine.connect() as conn:
-            conn.execute(text("ALTER TABLE materials ADD COLUMN folder_id UUID REFERENCES folders(id) ON DELETE SET NULL"))
-            conn.commit()
+    for tbl, col, ref in [
+        ("materials", "folder_id", "folders(id)"),
+        ("flashcards", "deck_id", "flashcard_decks(id)"),
+    ]:
+        existing = {c["name"] for c in inspector.get_columns(tbl)}
+        if col not in existing:
+            with engine.connect() as conn:
+                conn.execute(text(f"ALTER TABLE {tbl} ADD COLUMN {col} UUID REFERENCES {ref} ON DELETE SET NULL"))
+                conn.commit()
 
     db = SessionLocal()
     try:
@@ -53,6 +57,7 @@ app.include_router(users.router)
 app.include_router(materials.router)
 app.include_router(chat.router)
 app.include_router(quiz.router)
+app.include_router(decks.router)
 app.include_router(flashcard.router)
 app.include_router(gaps.router)
 app.include_router(plan.router)

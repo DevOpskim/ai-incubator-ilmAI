@@ -283,6 +283,34 @@ class Quiz(Base):
     )
 
 
+class FlashcardDeck(Base):
+    __tablename__ = "flashcard_decks"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    folder_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("folders.id", ondelete="SET NULL")
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    folder: Mapped["Folder | None"] = relationship()
+    flashcards: Mapped[list["Flashcard"]] = relationship(back_populates="deck", passive_deletes=True)
+
+
 class FlashcardNoteType(Base):
     __tablename__ = "flashcard_note_types"
 
@@ -299,6 +327,9 @@ class Flashcard(Base):
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    deck_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("flashcard_decks.id", ondelete="SET NULL")
     )
     topic_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("topics.id", ondelete="SET NULL")
@@ -322,6 +353,7 @@ class Flashcard(Base):
     )
 
     note_type: Mapped["FlashcardNoteType"] = relationship()
+    deck: Mapped["FlashcardDeck | None"] = relationship(back_populates="flashcards")
 
 
 class ReviewQueueItem(Base):
