@@ -23,6 +23,7 @@ alembic = "^1.13.0"
 pypdf = "^4.0.0"
 docx2txt = "^0.8"
 anthropic = "^0.39.0"
+fastembed = ">=0.2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.3"

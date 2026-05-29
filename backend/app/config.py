@@ -25,6 +25,8 @@ class Settings(BaseSettings):
 
     google_client_id: str | None = None
     google_client_secret: str | None = None
+    embedding_provider: str = "api"
+
     resend_api_key: str = ""
     smtp_from_email: str = ""
 

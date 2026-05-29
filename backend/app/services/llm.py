@@ -8,6 +8,7 @@ settings = get_settings()
 
 _embedding_client: OpenAI | None = None
 _default_chat_provider: BaseLLMProvider | None = None
+_local_embedding_model = None
 
 
 def get_embedding_client() -> OpenAI:
@@ -23,17 +24,35 @@ def get_embedding_client() -> OpenAI:
     return _embedding_client
 
 
+def _get_local_embedding(text: str) -> list[float]:
+    global _local_embedding_model
+    if _local_embedding_model is None:
+        from fastembed import TextEmbedding
+        _local_embedding_model = TextEmbedding(
+            model_name="Xenova/all-MiniLM-L6-v2",
+        )
+    embeddings = list(_local_embedding_model.embed([text]))
+    return embeddings[0].tolist()
+
+
 def generate_embedding(text: str) -> list[float]:
-    client = get_embedding_client()
-    if settings.openrouter_api_key:
-        model = "openai/text-embedding-ada-002"
-    else:
-        model = "text-embedding-ada-002"
-    response = client.embeddings.create(
-        model=model,
-        input=text,
-    )
-    return response.data[0].embedding
+    if settings.embedding_provider == "local":
+        return _get_local_embedding(text)
+
+    try:
+        client = get_embedding_client()
+        if settings.openrouter_api_key:
+            model = "openai/text-embedding-ada-002"
+        else:
+            model = "text-embedding-ada-002"
+        response = client.embeddings.create(
+            model=model,
+            input=text,
+        )
+        return response.data[0].embedding
+    except Exception as e:
+        print(f"API embedding failed ({e}), falling back to local...")
+        return _get_local_embedding(text)
 
 
 def _get_provider(provider_name: str | None, model_name: str | None) -> BaseLLMProvider:
