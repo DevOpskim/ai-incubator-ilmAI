@@ -169,7 +169,7 @@ export default function PlanPage() {
         )}
 
         {!loading && !generating && plan && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Goal + Summary */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-2">Goal</h2>
@@ -182,63 +182,94 @@ export default function PlanPage() {
               <p className="text-gray-700 mt-4 leading-relaxed">{plan.summary}</p>
             </div>
 
-            {/* Day-by-day plan */}
-            <div className="space-y-3">
-              {plan.days.map((d) => (
-                <div
-                  key={d.day}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
-                >
-                  <button
-                    onClick={() => setExpandedDay(expandedDay === d.day ? null : d.day)}
-                    className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 text-left"
-                  >
-                    <div>
-                      <span className="text-sm text-gray-400 font-mono mr-3">
-                        Day {d.day}
-                      </span>
-                      <span className="text-gray-900 font-medium">{d.title}</span>
-                    </div>
-                    <svg
-                      className={`w-5 h-5 text-gray-400 transition-transform ${
-                        expandedDay === d.day ? "rotate-180" : ""
-                      }`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
+            {/* Roadmap visual */}
+            {(() => {
+              const totalDays = plan.days.length;
+              const stages = [
+                { name: "Fundamentals", color: "bg-blue-500", light: "bg-blue-50", border: "border-blue-200", text: "text-blue-700", icon: "🌱" },
+                { name: "Intermediate", color: "bg-purple-500", light: "bg-purple-50", border: "border-purple-200", text: "text-purple-700", icon: "📈" },
+                { name: "Advanced", color: "bg-emerald-500", light: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-700", icon: "🚀" },
+              ];
+              const split = [Math.ceil(totalDays * 0.33), Math.ceil(totalDays * 0.66), totalDays];
+              const stageDays = [
+                plan.days.slice(0, split[0]),
+                plan.days.slice(split[0], split[1]),
+                plan.days.slice(split[1]),
+              ];
 
-                  {expandedDay === d.day && (
-                    <div className="px-6 pb-4 space-y-3">
-                      <ul className="space-y-2">
-                        {d.tasks.map((task, i) => (
-                          <li key={i} className="flex gap-2 text-sm text-gray-700">
-                            <span className="text-blue-500 mt-0.5">•</span>
-                            {task}
-                          </li>
-                        ))}
-                      </ul>
-                      {d.materials.length > 0 && (
-                        <div className="pt-2">
-                          <p className="text-xs text-gray-400 mb-1">Materials:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {d.materials.map((m, i) => (
-                              <span
-                                key={i}
-                                className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md"
-                              >
-                                {m}
-                              </span>
+              return (
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-6">Roadmap</h2>
+
+                  {/* Stepper */}
+                  <div className="flex items-center mb-8">
+                    {stages.map((s, i) => (
+                      <div key={s.name} className="flex-1 flex flex-col items-center relative">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg z-10 ${stageDays[i].length > 0 ? s.color + " text-white" : "bg-gray-200 text-gray-400"}`}>
+                          {s.icon}
+                        </div>
+                        <p className={`text-xs font-medium mt-2 ${stageDays[i].length > 0 ? "text-gray-900" : "text-gray-400"}`}>{s.name}</p>
+                        <p className="text-xs text-gray-400">{stageDays[i].length > 0 ? `${stageDays[i][0].day}-${stageDays[i][stageDays[i].length - 1].day}` : ""}</p>
+                        {i < stages.length - 1 && (
+                          <div className="absolute top-5 left-[60%] w-[80%] h-[2px] bg-gray-200 -z-0" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Stage details */}
+                  <div className="space-y-4">
+                    {stages.map((s, si) => {
+                      if (stageDays[si].length === 0) return null;
+                      return (
+                        <div key={s.name} className={`rounded-lg border ${s.border} ${s.light} overflow-hidden`}>
+                          <div className={`px-4 py-3 ${s.color} bg-opacity-10`}>
+                            <h3 className={`font-semibold ${s.text}`}>{s.icon} {s.name} — {stageDays[si].length} day{stageDays[si].length > 1 ? "s" : ""}</h3>
+                          </div>
+                          <div className="divide-y divide-gray-100">
+                            {stageDays[si].map((d) => (
+                              <div key={d.day}>
+                                <button
+                                  onClick={() => setExpandedDay(expandedDay === d.day ? null : d.day)}
+                                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-black/5 text-left"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-xs text-gray-400 font-mono w-10 shrink-0">Day {d.day}</span>
+                                    <span className="text-sm text-gray-900 font-medium">{d.title}</span>
+                                  </div>
+                                  <svg className={`w-4 h-4 text-gray-400 transition-transform ${expandedDay === d.day ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </button>
+                                {expandedDay === d.day && (
+                                  <div className="px-4 pb-3 pl-[5.5rem] space-y-2">
+                                    <ul className="space-y-1.5">
+                                      {d.tasks.map((task, ti) => (
+                                        <li key={ti} className="flex gap-2 text-sm text-gray-700">
+                                          <span className="text-blue-500 mt-0.5 shrink-0">•</span>
+                                          {task}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                    {d.materials.length > 0 && (
+                                      <div className="flex flex-wrap gap-1.5 pt-1">
+                                        {d.materials.map((m, mi) => (
+                                          <span key={mi} className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-md">{m}</span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             ))}
                           </div>
                         </div>
-                      )}
-                    </div>
-                  )}
+                      );
+                    })}
+                  </div>
                 </div>
-              ))}
-            </div>
+              );
+            })()}
           </div>
         )}
       </div>
