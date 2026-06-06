@@ -175,12 +175,20 @@ async def generate_into_deck(
     if deck.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    result = generate_flashcards(
-        user_id=current_user.id,
-        count=body.count,
-        db=db,
-        deck_id=deck.id,
-    )
+    try:
+        result = generate_flashcards(
+            user_id=current_user.id,
+            count=body.count,
+            db=db,
+            deck_id=deck.id,
+        )
+    except Exception as e:
+        msg = str(e)
+        if "rate limit" in msg.lower() or "rate_limit" in msg:
+            detail = "AI provider rate limit reached. Please wait and try again later, or switch to a different provider."
+        else:
+            detail = msg
+        raise HTTPException(status_code=429 if "rate" in msg.lower() else 500, detail=detail)
 
     return DeckWithCards(
         id=deck.id,

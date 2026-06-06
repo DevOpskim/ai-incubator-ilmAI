@@ -46,3 +46,10 @@ async def generate(
         return generate_plan(user_id=current_user.id, goal_id=None, db=db)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        msg = str(e)
+        if "rate limit" in msg.lower() or "rate_limit" in msg:
+            detail = "AI provider rate limit reached. Please wait and try again later, or switch to a different provider in Settings."
+        else:
+            detail = msg
+        raise HTTPException(status_code=429 if "rate" in msg.lower() else 500, detail=detail)

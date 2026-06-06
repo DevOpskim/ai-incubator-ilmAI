@@ -81,14 +81,22 @@ async def send_message(
         session.title = body.content[:80]
         db.commit()
 
-    result = process_chat_message(
-        session_id=session_id,
-        user_message=body.content,
-        user_id=current_user.id,
-        preferred_language=current_user.preferred_language,
-        db=db,
-        provider_name=body.provider,
-        model_name=body.model,
-    )
+    try:
+        result = process_chat_message(
+            session_id=session_id,
+            user_message=body.content,
+            user_id=current_user.id,
+            preferred_language=current_user.preferred_language,
+            db=db,
+            provider_name=body.provider,
+            model_name=body.model,
+        )
+    except Exception as e:
+        msg = str(e)
+        if "rate limit" in msg.lower() or "rate_limit" in msg:
+            detail = "AI provider rate limit reached. Please wait and try again later, or switch to a different provider."
+        else:
+            detail = msg
+        raise HTTPException(status_code=429 if "rate" in msg.lower() else 500, detail=detail)
 
     return result

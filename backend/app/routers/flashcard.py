@@ -25,11 +25,19 @@ async def generate(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ) -> GenerateResponse:
-    result = generate_flashcards(
-        user_id=current_user.id,
-        count=body.count,
-        db=db,
-    )
+    try:
+        result = generate_flashcards(
+            user_id=current_user.id,
+            count=body.count,
+            db=db,
+        )
+    except Exception as e:
+        msg = str(e)
+        if "rate limit" in msg.lower() or "rate_limit" in msg:
+            detail = "AI provider rate limit reached. Please wait and try again later, or switch to a different provider."
+        else:
+            detail = msg
+        raise HTTPException(status_code=429 if "rate" in msg.lower() else 500, detail=detail)
 
     for card in result.flashcards:
         enqueue_flashcard(

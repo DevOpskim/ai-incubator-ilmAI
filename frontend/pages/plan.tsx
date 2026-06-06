@@ -25,6 +25,7 @@ export default function PlanPage() {
   const [targetDate, setTargetDate] = useState("");
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPlan = async () => {
     setLoading(true);
@@ -64,13 +65,19 @@ export default function PlanPage() {
 
   const generatePlan = async () => {
     setGenerating(true);
+    setError(null);
     try {
       const res = await fetch("/api/plan/generate", { method: "POST" });
       if (res.ok) {
         const data = await res.json();
         setPlan(data);
+      } else {
+        const err = await res.json().catch(() => ({ detail: "Request failed" }));
+        setError(err.detail || `Error ${res.status}`);
       }
-    } catch {}
+    } catch {
+      setError("Network error. Please check your connection.");
+    }
     setGenerating(false);
   };
 
@@ -147,6 +154,12 @@ export default function PlanPage() {
               Save Goal
             </button>
           </form>
+        )}
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
         )}
 
         {loading && (
