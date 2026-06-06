@@ -32,7 +32,11 @@ def _get_local_embedding(text: str) -> list[float]:
             model_name="Xenova/all-MiniLM-L6-v2",
         )
     embeddings = list(_local_embedding_model.embed([text]))
-    return embeddings[0].tolist()
+    vec = embeddings[0].tolist()
+    # Pad to 1536 to match DB Vector(1536) column
+    if len(vec) < 1536:
+        vec = vec + [0.0] * (1536 - len(vec))
+    return vec
 
 
 def generate_embedding(text: str) -> list[float]:
