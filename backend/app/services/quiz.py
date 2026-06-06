@@ -73,18 +73,16 @@ def generate_questions(
         )
 
     raw = generate_text(prompt, temperature=0.7, max_tokens=3000)
-    raw = raw.strip()
-    if raw.startswith("```json"):
-        raw = raw[7:]
-    if raw.startswith("```"):
-        raw = raw[3:]
-    if raw.endswith("```"):
-        raw = raw[:-3]
+    start = raw.find("[")
+    end = raw.rfind("]")
+    if start != -1 and end != -1 and end > start:
+        raw = raw[start:end+1]
     raw = raw.strip()
 
     try:
         questions_data = json.loads(raw)
     except json.JSONDecodeError:
+        print(f"QUIZ_DEBUG: LLM raw length={len(raw)}, first 300 chars: {raw[:300]}")
         questions_data = []
 
     questions = []

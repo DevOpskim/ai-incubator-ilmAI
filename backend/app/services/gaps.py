@@ -81,18 +81,16 @@ def generate_gap_report(
     )
 
     raw = generate_text(prompt, temperature=0.5, max_tokens=2000)
-    raw = raw.strip()
-    if raw.startswith("```json"):
-        raw = raw[7:]
-    if raw.startswith("```"):
-        raw = raw[3:]
-    if raw.endswith("```"):
-        raw = raw[:-3]
+    start = raw.find("{")
+    end = raw.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        raw = raw[start:end+1]
     raw = raw.strip()
 
     try:
         report_data = json.loads(raw)
     except json.JSONDecodeError:
+        print(f"GAPS_DEBUG: LLM raw length={len(raw)}, first 300 chars: {raw[:300]}")
         report_data = {
             "summary": "Unable to generate report from available data.",
             "strengths": [],

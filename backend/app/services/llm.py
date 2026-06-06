@@ -28,9 +28,12 @@ def _get_local_embedding(text: str) -> list[float]:
     global _local_embedding_model
     if _local_embedding_model is None:
         from fastembed import TextEmbedding
-        _local_embedding_model = TextEmbedding(
-            model_name="Xenova/all-MiniLM-L6-v2",
-        )
+        models = TextEmbedding.list_supported_models()
+        # Pick first 384-dim model; fallback to first available
+        preferred = [m["model"] for m in models if m.get("dim") == 384]
+        model_name = preferred[0] if preferred else models[0]["model"]
+        print(f"EMBEDDING: Using {model_name} ({next(m.get('dim','?') for m in models if m['model']==model_name)} dim)")
+        _local_embedding_model = TextEmbedding(model_name=model_name)
     embeddings = list(_local_embedding_model.embed([text]))
     vec = embeddings[0].tolist()
     # Pad to 1536 to match DB Vector(1536) column
