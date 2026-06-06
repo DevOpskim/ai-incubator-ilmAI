@@ -133,13 +133,17 @@ def generate_plan(
         cards_mastered=cards_mastered,
     )
 
-    raw = generate_text(prompt, temperature=0.7, max_tokens=8000)
-    # Extract JSON object from response (handle markdown, surrounding text, etc.)
-    start = raw.find("{")
-    end = raw.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        raw = raw[start:end+1]
-    raw = raw.strip()
+    raw = ""
+    for attempt in range(2):
+        raw = generate_text(prompt, temperature=0.7, max_tokens=8000)
+        start = raw.find("{")
+        end = raw.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            raw = raw[start:end+1]
+        raw = raw.strip()
+        if raw:
+            break
+        print(f"PLAN_DEBUG: Empty response on attempt {attempt+1}, retrying...")
 
     try:
         plan_data = json.loads(raw)

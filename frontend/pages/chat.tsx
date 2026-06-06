@@ -54,6 +54,7 @@ const PROVIDERS: { label: string; value: string; models: { label: string; value:
       { label: "Llama 3.3 70B (free)", value: "meta-llama/llama-3.3-70b-instruct:free" },
       { label: "Llama 3.2 3B (free)", value: "meta-llama/llama-3.2-3b-instruct:free" },
       { label: "Gemma 4 26B (free)", value: "google/gemma-4-26b-a4b-it:free" },
+      { label: "Nemotron 30B (free)", value: "nvidia/nemotron-3-nano-30b-a3b:free" },
       { label: "Qwen 3 Coder (free)", value: "qwen/qwen3-coder:free" },
       { label: "GPT-4o", value: "openai/gpt-4o" },
       { label: "Claude 3.5 Sonnet", value: "anthropic/claude-3.5-sonnet" },
@@ -69,7 +70,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState("openrouter");
-  const [selectedModel, setSelectedModel] = useState("meta-llama/llama-3.3-70b-instruct:free");
+  const [selectedModel, setSelectedModel] = useState("google/gemma-4-26b-a4b-it:free");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

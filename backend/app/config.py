@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-4o"
     groq_model: str = "llama-3.3-70b-versatile"
     deepseek_model: str = "deepseek-chat"
-    openrouter_model: str = "meta-llama/llama-3.3-70b-instruct:free"
+    openrouter_model: str = "google/gemma-4-26b-a4b-it:free"
     anthropic_model: str = "claude-3-haiku-20240307"
 
     google_client_id: str | None = None
