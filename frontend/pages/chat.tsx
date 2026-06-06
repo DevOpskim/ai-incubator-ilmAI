@@ -51,6 +51,9 @@ const PROVIDERS: { label: string; value: string; models: { label: string; value:
     label: "OpenRouter",
     value: "openrouter",
     models: [
+      { label: "Mistral 7B (free)", value: "mistralai/mistral-7b-instruct:free" },
+      { label: "Llama 3.2 3B (free)", value: "meta-llama/llama-3.2-3b-instruct:free" },
+      { label: "Gemma 2 9B (free)", value: "google/gemma-2-9b-it:free" },
       { label: "GPT-4o", value: "openai/gpt-4o" },
       { label: "Claude 3.5 Sonnet", value: "anthropic/claude-3.5-sonnet" },
     ],
@@ -64,8 +67,8 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState("openai");
-  const [selectedModel, setSelectedModel] = useState("gpt-4o");
+  const [selectedProvider, setSelectedProvider] = useState("openrouter");
+  const [selectedModel, setSelectedModel] = useState("mistralai/mistral-7b-instruct:free");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
